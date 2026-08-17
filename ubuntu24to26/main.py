@@ -6,8 +6,8 @@ import sys
 import pleskdistup.main
 import pleskdistup.registry
 
-import ubuntu22to24.upgrader
+import ubuntu24to26.upgrader
 
 if __name__ == "__main__":
-    pleskdistup.registry.register_upgrader(ubuntu22to24.upgrader.Ubuntu22to24Factory())
+    pleskdistup.registry.register_upgrader(ubuntu24to26.upgrader.Ubuntu24to26Factory())
     sys.exit(pleskdistup.main.main())
