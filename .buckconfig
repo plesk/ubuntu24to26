@@ -7,5 +7,5 @@
     interpreter = /usr/bin/python3
 
 [repositories]
-    ubuntu22to24 = .
+    ubuntu24to26 = .
     dist-upgrader = ./dist-upgrader

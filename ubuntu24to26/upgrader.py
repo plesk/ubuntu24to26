@@ -5,18 +5,18 @@ import os
 import typing
 
 from pleskdistup import actions as common_actions
-from ubuntu22to24 import actions as custom_actions
+from ubuntu24to26 import actions as custom_actions
 
 from pleskdistup.common import action, feedback, php, version, strings
 from pleskdistup.phase import Phase
 from pleskdistup.upgrader import dist, DistUpgrader, DistUpgraderFactory, PathType
 
-import ubuntu22to24.config
+import ubuntu24to26.config
 
 
-class Ubuntu22to24Upgrader(DistUpgrader):
-    _distro_from = dist.Ubuntu("22")
-    _distro_to = dist.Ubuntu("24")
+class Ubuntu24to26Upgrader(DistUpgrader):
+    _distro_from = dist.Ubuntu("24")
+    _distro_to = dist.Ubuntu("26")
 
     def __init__(self):
         super().__init__()
@@ -42,15 +42,15 @@ class Ubuntu22to24Upgrader(DistUpgrader):
 
     @property
     def upgrader_name(self) -> str:
-        return "Plesk::Ubuntu22to24Upgrader"
+        return "Plesk::Ubuntu24to26Upgrader"
 
     @property
     def upgrader_version(self) -> str:
-        return ubuntu22to24.config.revision
+        return ubuntu24to26.config.revision
 
     @property
     def issues_url(self) -> str:
-        return "https://github.com/plesk/ubuntu22to24/issues"
+        return "https://github.com/plesk/ubuntu24to26/issues"
 
     def prepare_feedback(
         self,
@@ -87,6 +87,11 @@ class Ubuntu22to24Upgrader(DistUpgrader):
                     os.path.abspath(upgrader_bin_path),
                     options,
                 ),
+                common_actions.RemoveReplacePackages(
+                    {"sosreport": "sos"},
+                    os.path.join(options.state_dir , "dist-upgrader-sosreport.list"),
+                    "sosreport=>sos package workaround",
+                ),
             ],
             "Preupgrade packages": [
                 common_actions.RepairPleskInstallation(),  # Executed at the finish phase only
@@ -122,13 +127,13 @@ class Ubuntu22to24Upgrader(DistUpgrader):
                 #  we support following PHP versions: PHP 7.1, 7.2, 7.3.
                 common_actions.UpdateLegacyPhpRepositories(self._distro_from, self._distro_to),
                 common_actions.AdoptAptRepositoriesUbuntu([
-                    strings.create_replace_string_function('jammy', 'noble'),
+                    strings.create_replace_string_function('noble', 'resolute'),
                     strings.create_replace_regexp_function(
-                        r'(http|https)://([^/]+)/(.*\b)(ubuntu|ubuntu-testing)/22\.04(\b.*)',
-                        r'\g<1>://\g<2>/\g<3>\g<4>/24.04\g<5>')
+                        r'(http|https)://([^/]+)/(.*\b)(ubuntu|ubuntu-testing)/24\.04(\b.*)',
+                        r'\g<1>://\g<2>/\g<3>\g<4>/26.04\g<5>')
                     ], name="modify apt repositories to new OS"
                 ),
-                common_actions.SwitchPleskRepositories(to_os_version="24.04"),
+                common_actions.SwitchPleskRepositories(to_os_version="26.04"),
             ],
             "Dist-upgrade": [
                 common_actions.DoDistupgrade(),
@@ -187,7 +192,7 @@ class Ubuntu22to24Upgrader(DistUpgrader):
             ),
             common_actions.AssertRepositorySubstitutionAvailable(
                 target_repository_file="/etc/apt/sources.list.d/mariadb.list",
-                substitution_rule=strings.create_replace_string_function("jammy", "noble"),
+                substitution_rule=strings.create_replace_string_function("noble", "resolute"),
                 name="asserting mariadb repository substitution available",
                 description_addition="""\tCurrent MariaDB repository is not available on the target platform.
 \tTo proceed with dist-upgrade update MariaDB to version 10.6 or higher using the official repository,
@@ -199,7 +204,7 @@ class Ubuntu22to24Upgrader(DistUpgrader):
 
         if not options.skip_ancient_packages:
             checks.append(
-                common_actions.AssertAncientDebPackagesNotInstalled(["focal", "bionic"]))
+                common_actions.AssertAncientDebPackagesNotInstalled(["focal", "bionic", "noble"]))
 
         return checks
 
@@ -241,7 +246,7 @@ the log file.
         self.downgrade_allowed = options.downgrade_allowed
 
 
-class Ubuntu22to24Factory(DistUpgraderFactory):
+class Ubuntu24to26Factory(DistUpgraderFactory):
     def __init__(self):
         super().__init__()
 
@@ -256,11 +261,11 @@ class Ubuntu22to24Factory(DistUpgraderFactory):
         from_system: typing.Optional[dist.Distro] = None,
         to_system: typing.Optional[dist.Distro] = None
     ) -> bool:
-        return Ubuntu22to24Upgrader.supports(from_system, to_system)
+        return Ubuntu24to26Upgrader.supports(from_system, to_system)
 
     @property
     def upgrader_name(self) -> str:
-        return "Plesk::Ubuntu22to24Upgrader"
+        return "Plesk::Ubuntu24to26Upgrader"
 
     def create_upgrader(self, *args, **kwargs) -> DistUpgrader:
-        return Ubuntu22to24Upgrader(*args, **kwargs)
+        return Ubuntu24to26Upgrader(*args, **kwargs)
