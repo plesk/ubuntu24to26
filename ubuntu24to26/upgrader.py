@@ -82,6 +82,7 @@ class Ubuntu24to26Upgrader(DistUpgrader):
                 common_actions.AddInProgressSshLoginMessage(new_os),
                 common_actions.DisablePleskSshBanner(),
                 common_actions.UninstallTuxcareEls(),
+                common_actions.UninstallExtension("tuxcare-php"),
                 common_actions.ProhibitLibodbcFromMicrosoftRepository(),
                 common_actions.AddUpgradeSystemdService(
                     os.path.abspath(upgrader_bin_path),
@@ -103,19 +104,11 @@ class Ubuntu24to26Upgrader(DistUpgrader):
                             new_value="127.0.0.1",
                             old_value="::ffff:127.0.0.1",
                         ),
-                        "revert": common_actions.ConfigValueReplacer(
-                            new_value="::ffff:127.0.0.1",
-                            old_value="127.0.0.1",
-                        ),
-                   },
+                    },
                     "mysqld.innodb_fast_shutdown": {
                         "prepare": common_actions.ConfigValueReplacer(
                             new_value="0",
                             old_value=None,
-                        ),
-                        "revert": common_actions.ConfigValueReplacer(
-                            new_value=None,
-                            old_value="0",
                         ),
                     },
                 }),
@@ -130,7 +123,8 @@ class Ubuntu24to26Upgrader(DistUpgrader):
                     strings.create_replace_string_function('noble', 'resolute'),
                     strings.create_replace_regexp_function(
                         r'(http|https)://([^/]+)/(.*\b)(ubuntu|ubuntu-testing)/24\.04(\b.*)',
-                        r'\g<1>://\g<2>/\g<3>\g<4>/26.04\g<5>')
+                        r'\g<1>://\g<2>/\g<3>\g<4>/26.04\g<5>'),
+                    strings.create_replace_string_function('24.04', '26.04'),
                     ], name="modify apt repositories to new OS"
                 ),
                 common_actions.SwitchPleskRepositories(to_os_version="26.04"),
@@ -169,15 +163,15 @@ class Ubuntu24to26Upgrader(DistUpgrader):
         if phase is Phase.FINISH:
             return []
 
-        PHP_VERSIONS_SUPPORTED_BY_UBUNTU_24 = [
-            str(php) for php in php.get_known_php_versions() if php >= version.PHPVersion("7.4")]
+        PHP_VERSIONS_SUPPORTED_BY_UBUNTU_26 = [
+            str(php) for php in php.get_known_php_versions() if php > version.PHPVersion("8.0")]
 
         checks = [
             common_actions.AssertMinPleskVersion("18.0.62"),
             common_actions.AssertPleskInstallerNotInProgress(),
-            common_actions.AssertInstalledPhpVersionsInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_24),
-            common_actions.AssertPhpVersionsUsedByWebsitesInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_24),
-            common_actions.AssertPhpVersionsUsedByCronInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_24),
+            common_actions.AssertInstalledPhpVersionsInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_26),
+            common_actions.AssertPhpVersionsUsedByWebsitesInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_26),
+            common_actions.AssertPhpVersionsUsedByCronInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_26),
             common_actions.AssertDpkgNotLocked(),
             common_actions.AssertNotInContainer(),
             common_actions.AssertPleskComponents(not_installed=["mailman"]),
@@ -200,6 +194,8 @@ class Ubuntu24to26Upgrader(DistUpgrader):
 """,
             ),
             common_actions.AssertNoLibodbcFromMicrosoftRepository(),
+            # SoGo doesn't provide Ubuntu-26.04 repositories, yet
+            common_actions.AssertPleskExtensions(not_installed=["sogo"])
         ]
 
         if not options.skip_ancient_packages:
