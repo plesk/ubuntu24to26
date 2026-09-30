@@ -163,15 +163,15 @@ class Ubuntu24to26Upgrader(DistUpgrader):
         if phase is Phase.FINISH:
             return []
 
-        PHP_VERSIONS_SUPPORTED_BY_UBUNTU_24 = [
-            str(php) for php in php.get_known_php_versions() if php >= version.PHPVersion("7.4")]
+        PHP_VERSIONS_SUPPORTED_BY_UBUNTU_26 = [
+            str(php) for php in php.get_known_php_versions() if php > version.PHPVersion("8.0")]
 
         checks = [
             common_actions.AssertMinPleskVersion("18.0.62"),
             common_actions.AssertPleskInstallerNotInProgress(),
-            common_actions.AssertInstalledPhpVersionsInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_24),
-            common_actions.AssertPhpVersionsUsedByWebsitesInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_24),
-            common_actions.AssertPhpVersionsUsedByCronInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_24),
+            common_actions.AssertInstalledPhpVersionsInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_26),
+            common_actions.AssertPhpVersionsUsedByWebsitesInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_26),
+            common_actions.AssertPhpVersionsUsedByCronInList(PHP_VERSIONS_SUPPORTED_BY_UBUNTU_26),
             common_actions.AssertDpkgNotLocked(),
             common_actions.AssertNotInContainer(),
             common_actions.AssertPleskComponents(not_installed=["mailman"]),
