@@ -7,7 +7,7 @@ import typing
 from pleskdistup import actions as common_actions
 from ubuntu24to26 import actions as custom_actions
 
-from pleskdistup.common import action, feedback, php, version, strings
+from pleskdistup.common import action, feedback, php, version, strings, systemd
 from pleskdistup.phase import Phase
 from pleskdistup.upgrader import dist, DistUpgrader, DistUpgraderFactory, PathType
 
@@ -87,6 +87,8 @@ class Ubuntu24to26Upgrader(DistUpgrader):
                 common_actions.AddUpgradeSystemdService(
                     os.path.abspath(upgrader_bin_path),
                     options,
+                    service_name = common_actions.DEFAULT_RESUME_SERVICE_NAME,
+                    remove_service_in_post = False, # will be removed before reboot
                 ),
                 common_actions.RemoveReplacePackages(
                     {"sosreport": "sos"},
@@ -146,6 +148,8 @@ class Ubuntu24to26Upgrader(DistUpgrader):
                 common_actions.Reboot(
                     prepare_next_phase=Phase.FINISH,
                     name="reboot and perform finishing actions",
+                    do_before_post_reboot=lambda: \
+                        systemd.remove_systemd_service(common_actions.DEFAULT_RESUME_SERVICE_NAME)
                 ),
                 common_actions.Reboot(
                     prepare_reboot=None,
