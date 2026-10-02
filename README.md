@@ -41,7 +41,7 @@ To retrieve the latest available version of the tool, please navigate to the "Re
 
 To prepare the latest version of the tool for use, please run the following commands:
 ```shell
-> wget https://github.com/plesk/ubuntu24to26/releases/download/v1.0.0/ubuntu24to26.zip
+> wget https://github.com/plesk/ubuntu24to26/releases/download/v1.1.0/ubuntu24to26.zip
 > unzip ubuntu24to26.zip
 > chmod 755 ubuntu24to26
 ```
