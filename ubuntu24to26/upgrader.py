@@ -148,13 +148,13 @@ class Ubuntu24to26Upgrader(DistUpgrader):
                 common_actions.Reboot(
                     prepare_next_phase=Phase.FINISH,
                     name="reboot and perform finishing actions",
-                    do_before_post_reboot=lambda: \
-                        systemd.remove_systemd_service(common_actions.DEFAULT_RESUME_SERVICE_NAME)
                 ),
                 common_actions.Reboot(
                     prepare_reboot=None,
                     post_reboot=action.RebootType.AFTER_LAST_STAGE,
                     name="final reboot",
+                    do_before_post_reboot=lambda: \
+                        systemd.remove_systemd_service(common_actions.DEFAULT_RESUME_SERVICE_NAME)
                 ),
             ],
         }
