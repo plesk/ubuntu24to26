@@ -199,7 +199,7 @@ class Ubuntu24to26Upgrader(DistUpgrader):
             ),
             common_actions.AssertNoLibodbcFromMicrosoftRepository(),
             # SoGo doesn't provide Ubuntu-26.04 repositories, yet
-            common_actions.AssertPleskExtensions(not_installed=["sogo", "ruby"])
+            common_actions.AssertPleskExtensions(not_installed=["sogo"])
         ]
 
         if not options.skip_ancient_packages:
